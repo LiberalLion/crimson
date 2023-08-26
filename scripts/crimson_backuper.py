@@ -51,7 +51,7 @@ def import_cookies(cookie):
     #cookie_header = cookie.split(":")[0]
     cookie_values = cookie.split(":")[1].split(";")[:-1]
     for q in cookie_values:
-        cookies.update(dict([q.lstrip().split("=")]))
+        cookies |= dict([q.lstrip().split("=")])
     return cookies
 
 def combine_wordlists(wordlist1, wordlist2):
@@ -76,15 +76,11 @@ def check_backup_file(urls, extensions, cookies, headers):
             backup = url + ext
             try:
                 r2 = s.get(backup, allow_redirects=True, verify=False, timeout=3)
-                # Check if r2 is not permanently redirected, if not send r1.
-                # If status code of r2 is equal 200 step into next check.
-                # If Content-Length or the r2 is not the same as r1 step ino next check.
-                # If there are no reflection, the backup file has been found, either way there is a path/host reflection - check for xss.
                 if not r2.is_permanent_redirect and r2.status_code == 200 and r2.content != r1.content:
                     if r2.url not in r2.text:
-                        backups_list.append("[+] BACKUP FILE FOUND AT: " + r2.url)
+                        backups_list.append(f"[+] BACKUP FILE FOUND AT: {r2.url}")
                     else:
-                        backups_list.append("[+] REFLECTION FOUND AT: " + r2.ulr)
+                        backups_list.append(f"[+] REFLECTION FOUND AT: {r2.ulr}")
             except KeyboardInterrupt:
                 sys.exit()
             except:
@@ -110,7 +106,7 @@ for current_argument, current_value in arguments:
     elif current_argument in ("-c", "--cookies"):
         cookies = current_value
     elif current_argument in ("-H", "--header"):
-        headers.update([current_value.split("=")])
+        headers |= [current_value.split("=")]
     elif current_argument in ("-e", "--extensions"):
         list_of_extensions = current_value
     elif current_argument in ("-o", "--output"):
@@ -118,7 +114,6 @@ for current_argument, current_value in arguments:
     elif current_argument in ("-h", "--help"):
         show_help = True
 
-### MAIN
 if __name__ == '__main__':
     if show_help:
         helper()

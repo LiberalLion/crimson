@@ -60,7 +60,7 @@ def import_cookies(cookie):
     #cookie_header = cookie.split(":")[0]
     cookie_values = cookie.split(":")[1].split(";")[:-1]
     for q in cookie_values:
-        cookies.update(dict([q.lstrip().split("=")]))
+        cookies |= dict([q.lstrip().split("=")])
     return cookies
 
 
@@ -70,7 +70,6 @@ def paramjuggler(url,payload):
     parsed=urlparse.urlparse(url)
     queries=parsed.query.split("&")
     for i,query in enumerate(queries):
-        result = []
         new_queries = []
         new_queries = queries[:]
         new_parsed = ""
@@ -79,7 +78,7 @@ def paramjuggler(url,payload):
         new_param=param+payload
         new_queries[i] = new_param
         new_parsed = parsed._replace(query="&".join(new_queries))
-        result.append(urlparse.urlunparse(new_parsed))
+        result = [urlparse.urlunparse(new_parsed)]
         new_urls.append("".join(result).rstrip())
     return new_urls
 
@@ -102,11 +101,11 @@ def check_ssti_string_based(urls, cookies, headers):
     for url in urls:
         for payload in ssti_payloads_7777:
             armed_urls += paramjuggler(url,payload)
-    
+
     for armed_url in tqdm(armed_urls):   
         r1 = s.get(armed_url, allow_redirects=True, verify=False)
         if "7777" in r1.text:
-            output_list.append("[+] 7777 INJECTION FOUND: " + r1.url)
+            output_list.append(f"[+] 7777 INJECTION FOUND: {r1.url}")
     return output_list
 
 
@@ -127,11 +126,11 @@ def check_ssti_error_based(urls, cookies, headers):
     for url in urls:
         for payload in ssti_payloads_error:
             armed_urls += paramjuggler(url,payload)
-    
+
     for armed_url in tqdm(armed_urls):
         r1 = s.get(armed_url, allow_redirects=True, verify=False)
         if r1.status_code == 500:
-            output_list.append("[+] INTERNAL ERROR FOUND: " + r1.url)
+            output_list.append(f"[+] INTERNAL ERROR FOUND: {r1.url}")
     return output_list
 
 
@@ -153,13 +152,12 @@ for current_argument, current_value in arguments:
     elif current_argument in ("-c", "--cookies"):
         cookies = current_value
     elif current_argument in ("-H", "--header"):
-        headers.update([current_value.split("=")])
+        headers |= [current_value.split("=")]
     elif current_argument in ("-o", "--output"):
         logs_name = current_value
     elif current_argument in ("-h", "--help"):
         show_help = True
 
-### MAIN
 if __name__ == '__main__':
     if show_help:
         helper()
@@ -172,9 +170,8 @@ if __name__ == '__main__':
         output_list = check_ssti_string_based(urls, cookies, headers)
         print("\033[0;31m [++]\033[0m CHECKING ERROR BASED INJECTIONS")
         output_list += check_ssti_error_based(urls, cookies, headers)
-        if logs_name is not None:
-            if output_list:
-                logs_saver(output_list, logs_name)
-        else:
+        if logs_name is None:
             for element in output_list:
                 print(element.rstrip())
+        elif output_list:
+            logs_saver(output_list, logs_name)

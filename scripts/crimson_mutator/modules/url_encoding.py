@@ -14,14 +14,7 @@ def make_url(string):
 
 
 def make_plus(string):
-    new_string = ""
-    for letter in string:
-        if letter == " ":
-            new_string+="+"
-        else:
-            new_string+=letter
-
-    return new_string
+    return "".join("+" if letter == " " else letter for letter in string)
 
 
 def make_plus_encoded(string):

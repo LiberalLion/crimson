@@ -39,21 +39,20 @@ except getopt.error as err:
 
 ### REPLACE PARAMS WITH PAYLOAD => print value to stdout
 def paramjuggler(url,payload):
-    parsed=urlparse.urlparse(url)
-    #Extract queries table
-    queries=parsed.query.split("&")
-    for i,query in enumerate(queries):
-        result = []
-        new_queries = []
-        new_queries = queries[:]
-        new_parsed = ""
-        #Extract the param from query
-        param=(queries[i].split("=")[0] + "=")
-        new_param=param+payload
-        new_queries[i] = new_param
-        new_parsed = parsed._replace(query="&".join(new_queries))
-        result.append(urlparse.urlunparse(new_parsed))
-        print("".join(result).rstrip())
+        parsed=urlparse.urlparse(url)
+        #Extract queries table
+        queries=parsed.query.split("&")
+        for i,query in enumerate(queries):
+                new_queries = []
+                new_queries = queries[:]
+                new_parsed = ""
+                #Extract the param from query
+                param=(queries[i].split("=")[0] + "=")
+                new_param=param+payload
+                new_queries[i] = new_param
+                new_parsed = parsed._replace(query="&".join(new_queries))
+                result = [urlparse.urlunparse(new_parsed)]
+                print("".join(result).rstrip())
 
 
 ### READ URLS

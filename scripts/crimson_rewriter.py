@@ -47,7 +47,7 @@ def import_cookies(cookie):
     #cookie_header = cookie.split(":")[0]
     cookie_values = cookie.split(":")[1].split(";")[:-1]
     for q in cookie_values:
-        cookies.update(dict([q.lstrip().split("=")]))
+        cookies |= dict([q.lstrip().split("=")])
     return cookies
 
 def rewriter_check(urls,headers,cookies):
@@ -59,9 +59,9 @@ def rewriter_check(urls,headers,cookies):
             r2 = requests.get(url.rstrip(), verify=False, headers={'X-Original-Url':'/doesnotextist123'})
             r3 = requests.get(url.rstrip(), verify=False, headers={'X-Rewrite-Url':'/doesnotexist321'})
             if r1.status_code != r2.status_code:
-                output_list.append("[+] ORIGINAL HEADER FOUND: " + r2.url)
+                output_list.append(f"[+] ORIGINAL HEADER FOUND: {r2.url}")
             elif r1.status_code != r3.status_code:
-                output_list.append("[+] REWRITE HEADER FOUND: " + r1.url)
+                output_list.append(f"[+] REWRITE HEADER FOUND: {r1.url}")
         except KeyboardInterrupt:
             sys.exit(0)
         except:
@@ -87,14 +87,13 @@ for current_argument, current_value in arguments:
     elif current_argument in ("-c", "--cookies"):
         cookies = current_value
     elif current_argument in ("-H", "--header"):
-        headers.update([current_value.split("=")])
+        headers |= [current_value.split("=")]
     elif current_argument in ("-o", "--output"):
         output = current_value
     elif current_argument in ("-h", "--help"):
         show_help = True
 
 
-### MAIN
 if __name__ == '__main__':
     if show_help:
         helper()

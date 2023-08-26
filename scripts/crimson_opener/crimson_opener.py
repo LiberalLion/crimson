@@ -44,56 +44,56 @@ def open_in_webrowser(url):
     webbrowser.get('firefox').open_new_tab(url)
 
 def loop_over_file(list_of_payloads):
-    print("OPENING:")
-    i=0
-    with open(list_of_payloads) as payloads:
-        for payload in payloads:
-            try:
-                i+=1
-                open_in_webrowser((url.rstrip()).replace("FUZZ",payload.rstrip()))
-                print("ID: " + str(i) + " - URL: " + url.rstrip().replace("FUZZ",payload.rstrip()))
-                ### ADJUST AS MUCH AS YOU WANT - depends on the internet connection
-                time.sleep(0.2)
-            except KeyboardInterrupt:
-                sys.exit(0)
-            except:
-                pass
+        print("OPENING:")
+        i=0
+        with open(list_of_payloads) as payloads:
+                for payload in payloads:
+                        try:
+                                i+=1
+                                open_in_webrowser((url.rstrip()).replace("FUZZ",payload.rstrip()))
+                                print(f"ID: {i} - URL: " + url.rstrip().replace("FUZZ",payload.rstrip()))
+                                ### ADJUST AS MUCH AS YOU WANT - depends on the internet connection
+                                time.sleep(0.2)
+                        except KeyboardInterrupt:
+                            sys.exit(0)
+                        except:
+                            pass
 
 def just_open(urls_list):
-    print("OPENING:")
-    i=0
-    with open(urls_list) as urls:
-        for url in urls:
-            try:
-                i+=1
-                open_in_webrowser(url.rstrip())
-                print("ID: " + str(i) + " - URL: " + url.rstrip())  
-                time.sleep(0.2)
-            except KeyboardInterrupt:
-                sys.exit(0)
-            except:
-                   pass
+        print("OPENING:")
+        i=0
+        with open(urls_list) as urls:
+                for url in urls:
+                        try:
+                                i+=1
+                                open_in_webrowser(url.rstrip())
+                                print(f"ID: {i} - URL: {url.rstrip()}")
+                                time.sleep(0.2)
+                        except KeyboardInterrupt:
+                            sys.exit(0)
+                        except:
+                               pass
             
 ### OPTIONS ---
 for current_argument, current_value in arguments:
-    if current_argument in ("-h", "--help"):
-        print("""\033[0;31m
+        if current_argument in ("-h", "--help"):
+                print("""\033[0;31m
  ██████╗██████╗ ██╗███╗   ███╗███████╗ ██████╗ ███╗   ██╗         ██████╗ ██████╗ ███████╗███╗   ██╗███████╗██████╗ 
 ██╔════╝██╔══██╗██║████╗ ████║██╔════╝██╔═══██╗████╗  ██║        ██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██╔══██╗
 ██║     ██████╔╝██║██╔████╔██║███████╗██║   ██║██╔██╗ ██║        ██║   ██║██████╔╝█████╗  ██╔██╗ ██║█████╗  ██████╔╝
 ██║     ██╔══██╗██║██║╚██╔╝██║╚════██║██║   ██║██║╚██╗██║        ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██╔══██╗
 ╚██████╗██║  ██║██║██║ ╚═╝ ██║███████║╚██████╔╝██║ ╚████║███████╗╚██████╔╝██║     ███████╗██║ ╚████║███████╗██║  ██║
  ╚═════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝\033[0m""")
-        print("\tEDIT manual_payloads.txt\n\tUSAGE: \tcrimson_opener.py\n\n \t\t-h --help => Show this help \n\t\t-u --url=\"http://example.com/FUZZ\" \n\t\t-l --list=list of urls\n\t\t-o --open=list of urls(without FUZZ)")
-    elif current_argument in ("-u", "--url"):
-        url = current_value 
-        loop_over_file(list_of_payloads)
-    elif current_argument in ("-l", "--list"):
-        with open(str(current_value)) as urls:
-            for url in urls:
-                loop_over_file(list_of_payloads)
-    elif current_argument in ("-o", "--open"):
-        just_open(current_value)
+                print("\tEDIT manual_payloads.txt\n\tUSAGE: \tcrimson_opener.py\n\n \t\t-h --help => Show this help \n\t\t-u --url=\"http://example.com/FUZZ\" \n\t\t-l --list=list of urls\n\t\t-o --open=list of urls(without FUZZ)")
+        elif current_argument in ("-u", "--url"):
+            url = current_value 
+            loop_over_file(list_of_payloads)
+        elif current_argument in ("-l", "--list"):
+                with open(str(current_value)) as urls:
+                        for _ in urls:
+                                loop_over_file(list_of_payloads)
+        elif current_argument in ("-o", "--open"):
+            just_open(current_value)
 
 
 ### ---

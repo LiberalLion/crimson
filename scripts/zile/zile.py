@@ -56,15 +56,15 @@ def request(url):
     try:
         headers = {"User-Agent":settings["requestUA"]} # define http request headers as dictionary
         response = requests.get(url,timeout=settings["requestTimeout"])
-        print("[+] " + url)
+        print(f"[+] {url}")
         return response.text
     except Exception as e:
         return ""
 def printResult(x,y):
     if "--colored" in args: # if colored parameter has given as argument
-        print(colored("[{}] {}".format(x,y),random.choice(colors))) # print output colored
+        print(colored(f"[{x}] {y}", random.choice(colors)))
     else:
-        print("[{}] {}".format(x,y)) # print output normally
+        print(f"[{x}] {y}")
 def extract(text):
     for p in patterns:
         pattern = r"[:|=|\'|\"|\s*|`|´| |,|?=|\]|\|//|/\*}]("+p[1]+r")[:|=|\'|\"|\s*|`|´| |,|?=|\]|\}|&|//|\*/]"
@@ -78,8 +78,8 @@ def splitArgs(text):
         return text
 def fromUrl(url):
     if not (url.startswith("http://") or url.startswith("https://")):
-        extract(request("http://"+url))
-        extract(request("https://"+url))
+        extract(request(f"http://{url}"))
+        extract(request(f"https://{url}"))
     else:
         extract(request(url))
 args = list(sys.argv)[1:]
@@ -91,7 +91,7 @@ if "--file" in args: # if file parameter has given as argument
     for file in totalFiles: # for each files
         try:
             read = open(file, "r", encoding='utf-8').read() # read them
-            print ("[+] " + file)
+            print(f"[+] {file}")
             extract(read) # and call extract function
         except Exception: # if it gives error
             pass # just ignore it

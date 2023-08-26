@@ -51,7 +51,7 @@ def import_cookies(cookie):
     #cookie_header = cookie.split(":")[0]
     cookie_values = cookie.split(":")[1].split(";")[:-1]
     for q in cookie_values:
-        cookies.update(dict([q.lstrip().split("=")]))
+        cookies |= dict([q.lstrip().split("=")])
     return cookies
 
 
@@ -73,7 +73,6 @@ def paramjuggler(url,payload):
     #Extract queries table
     queries=parsed.query.split("&")
     for i,query in enumerate(queries):
-        result = []
         new_queries = []
         new_queries = queries[:]
         new_parsed = ""
@@ -82,7 +81,7 @@ def paramjuggler(url,payload):
         new_param=param+payload
         new_queries[i] = new_param
         new_parsed = parsed._replace(query="&".join(new_queries))
-        result.append(urlparse.urlunparse(new_parsed))
+        result = [urlparse.urlunparse(new_parsed)]
         swapped_url = ("".join(result).rstrip())
 
     return swapped_url
@@ -93,28 +92,30 @@ def edit_urls(list_of_urls,list_of_payloads):
     swapped_urls = []
     with open(list_of_urls) as urls:
         for url in urls:
-            for payload in list_of_payloads:
-                swapped_urls.append(paramjuggler(url,payload))    
+            swapped_urls.extend(paramjuggler(url,payload) for payload in list_of_payloads)
     return(swapped_urls)
 
 
 def send_payloads_url(swapped_urls,headers, cookies):
     '''Send requests and save the logs'''
     output_list = []
-    id = 0
     s = requests.Session()
     s.cookies.update(cookies)
     s.headers.update(headers)
-    
-    for url in tqdm(swapped_urls):
-        id+=1
+
+    for id, url in enumerate(tqdm(swapped_urls), start=1):
         try:
             s.get(url, verify=False, allow_redirects=True)
         except KeyboardInterrupt:
             sys.exit(0)
         except:
             pass
-        output_list.append("ID: " + str(id) + " - TIME: " + str(datetime.now().time().strftime("%H:%M:%S")) + " - URL: " + url)
+        output_list.append(
+            f"ID: {id} - TIME: "
+            + str(datetime.now().time().strftime("%H:%M:%S"))
+            + " - URL: "
+            + url
+        )
     return output_list
 
 
@@ -151,7 +152,7 @@ for current_argument, current_value in arguments:
     elif current_argument in ("-c", "--cookies"):
         cookies = current_value
     elif current_argument in ("-H", "--header"):
-        headers.update([current_value.split("=")])
+        headers |= [current_value.split("=")]
     elif current_argument in ("-w", "--wordlist"):
         list_of_urls = current_value
     elif current_argument in ("-p", "--payloads"):
@@ -160,10 +161,6 @@ for current_argument, current_value in arguments:
         logs_name = current_value
     elif current_argument in ("-h", "--help"):
         show_help = True
-### ---
-
-
-### MAIN
 if __name__ == '__main__':
     if show_help:
         helper()
@@ -178,9 +175,8 @@ if __name__ == '__main__':
         # 3) Send requests
         output_list = send_payloads_url(swapped_urls, headers, cookies)
         # 4) Save or print the results
-        if logs_name is not None:
-            if output_list:
-                logs_saver(output_list, logs_name)
-        else:
+        if logs_name is None:
             for element in output_list:
                 print(element.rstrip())
+        elif output_list:
+            logs_saver(output_list, logs_name)
